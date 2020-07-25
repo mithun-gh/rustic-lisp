@@ -1,9 +1,10 @@
 use std::slice::Iter;
 use std::iter::Peekable;
 
+#[derive(Debug, PartialEq)]
 pub enum Token {
     Number(f64),
-    Symbol(String),
+    Symbol(&'static str),
     Parenthesis(char),
 }
 
@@ -30,16 +31,28 @@ impl<'a> Iterator for Lexer<'a> {
 mod tests {
     use super::*;
 
-    macro_rules! prepare_input {
-        ($name: ident, $string_slice: literal) => {
+    macro_rules! lex_and_assert_eq {
+        ($string_slice:literal, $expected:expr) => {
             let code = $string_slice.chars().collect::<Vec<char>>();
-            let mut $name = Lexer::new(code.iter());
+            let lexer = Lexer::new(code.iter());
+            let result = lexer.collect::<Vec<Token>>();
+            assert_eq!(result, $expected);
         };
     }
 
     #[test]
-    fn empty_code_should_return_none() {
-        prepare_input!(lexer, "");
-        assert!(lexer.next().is_none());
+    fn test_empty_code() {
+        lex_and_assert_eq!("", Vec::<Token>::new());
+    }
+
+    #[test]
+    fn test_basic_expr() {
+        lex_and_assert_eq!("(+ 2 4)", vec![
+            Token::Parenthesis('('),
+            Token::Symbol("+"),
+            Token::Number(2.0),
+            Token::Number(4.0),
+            Token::Parenthesis(')'),
+        ]);
     }
 }
