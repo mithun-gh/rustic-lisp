@@ -1,3 +1,5 @@
+use lisp_calc::repl;
+
 fn main() {
-    println!("Hello, world!");
+    repl::run();
 }
