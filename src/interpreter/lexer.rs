@@ -5,6 +5,7 @@ use std::iter::Peekable;
 pub enum Token {
     Number(f64),
     Punctuator(char),
+    String(String),
     Symbol(String),
 }
 
@@ -23,7 +24,6 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        
         while let Some(&&ch) = self.code.peek() {
             match ch {
                 ch if ch.is_ascii_digit() => {
@@ -43,6 +43,26 @@ impl<'a> Iterator for Lexer<'a> {
                     } else {
                         panic!(format!("invalid number: {}", number));
                     }
+                },
+                '"' => {
+                    let mut string = String::new();
+
+                    self.code.next();
+                    while let Some(&ch) = self.code.next() {
+                        if ch == '"' {
+                            break;
+                        } else if ch == '\\' {
+                            if let Some(&ch) = self.code.next() {
+                                string.push(get_escape_sequence(ch));
+                                continue;
+                            } else {
+                                panic!("unexpected end of input");
+                            }
+                        }
+                        string.push(ch);
+                    }
+
+                    return Some(Token::String(string));
                 },
                 '(' | '\'' | ')' => {
                     self.code.next();
@@ -73,6 +93,17 @@ impl<'a> Iterator for Lexer<'a> {
         }
 
         None
+    }
+}
+
+fn get_escape_sequence(ch: char) -> char {
+    match ch {
+        '"' => '"',
+        'n' => '\n',
+        'r' => '\r',
+        't' => '\t',
+        '\\' => '\\',
+        _ => panic!(format!("unrecognised escape sequence: \\{}", ch)),
     }
 }
 
