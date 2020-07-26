@@ -172,4 +172,11 @@ mod tests {
     fn test_invalid_number() {
         lex_and_assert_eq!("98.23.35", Vec::<_>::new());
     }
+
+    #[test]
+    fn test_valid_string() {
+        lex_and_assert_eq!("\"Hello, world!\"", vec![
+            Token::String("Hello, world!".to_string())
+        ]);
+    }
 }
