@@ -69,7 +69,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "unrecognized symbol")]
-    fn test_illegal_character() {
+    fn test_invalid_symbol() {
         lex_and_assert_eq!("(+2 3)", Vec::<_>::new());
     }
 
