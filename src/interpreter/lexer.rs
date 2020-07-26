@@ -4,7 +4,7 @@ use std::iter::Peekable;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Number(f64),
-    Parenthesis(char),
+    Punctuator(char),
     Symbol(String),
 }
 
@@ -44,17 +44,21 @@ impl<'a> Iterator for Lexer<'a> {
                         panic!(format!("invalid number: {}", number));
                     }
                 },
-                '(' | ')' => {
+                '(' | '\'' | ')' => {
                     self.code.next();
-                    return Some(Token::Parenthesis(ch));
+                    return Some(Token::Punctuator(ch));
                 },
                 _ => {
                     let mut symbol = String::new();
 
-                    while let Some(&ch) = self.code.next() {
-                        if ch.is_ascii_whitespace() {
+                    while let Some(&&ch) = self.code.peek() {
+                        if ch == '(' || ch == '\'' || ch == ')' {
+                            break;
+                        } else if ch.is_ascii_whitespace() {
+                            self.code.next();
                             break;
                         } else {
+                            self.code.next();
                             symbol.push(ch);
                         }
                     }
@@ -92,22 +96,32 @@ mod tests {
 
     #[test]
     fn test_basic_expr() {
-        lex_and_assert_eq!("(+ 2 74.95)", vec![
-            Token::Parenthesis('('),
+        lex_and_assert_eq!("'(+ 2 74.95)", vec![
+            Token::Punctuator('\''),
+            Token::Punctuator('('),
             Token::Symbol("+".to_string()),
             Token::Number(2.0),
             Token::Number(74.95),
-            Token::Parenthesis(')'),
+            Token::Punctuator(')'),
         ]);
     }
 
     #[test]
     fn test_missing_space_merges_number_to_symbol() {
         lex_and_assert_eq!("(+2 4)", vec![
-            Token::Parenthesis('('),
+            Token::Punctuator('('),
             Token::Symbol("+2".to_string()),
             Token::Number(4.0),
-            Token::Parenthesis(')'),
+            Token::Punctuator(')'),
+        ]);
+    }
+
+    #[test]
+    fn test_missing_space_between_symbol_and_parenthesis() {
+        lex_and_assert_eq!("(test)", vec![
+            Token::Punctuator('('),
+            Token::Symbol("test".to_string()),
+            Token::Punctuator(')'),
         ]);
     }
 
