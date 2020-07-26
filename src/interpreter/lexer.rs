@@ -9,7 +9,6 @@ pub enum Token {
     Symbol(String),
 }
 
-#[allow(unused)]
 pub struct Lexer<'a> {
     code: Peekable<Iter<'a, char>>,
 }
