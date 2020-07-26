@@ -1,5 +1,5 @@
 [package]
-name = "lisp-calc"
+name = "rustic-lisp"
 version = "0.1.0"
 authors = ["Mithun <mithunrathinasamy@live.com>"]
 edition = "2018"
