@@ -1,11 +1,11 @@
 use std::slice::Iter;
 use std::iter::Peekable;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Token {
     Number(f64),
-    Symbol(&'static str),
     Parenthesis(char),
+    Symbol(&'static str),
 }
 
 #[allow(unused)]
@@ -47,12 +47,35 @@ mod tests {
 
     #[test]
     fn test_basic_expr() {
-        lex_and_assert_eq!("(+ 2 4)", vec![
+        lex_and_assert_eq!("(+ 2 74.95)", vec![
             Token::Parenthesis('('),
             Token::Symbol("+"),
             Token::Number(2.0),
-            Token::Number(4.0),
+            Token::Number(74.95),
             Token::Parenthesis(')'),
         ]);
+    }
+
+    #[test]
+    fn test_all_valid_symbols() {
+        lex_and_assert_eq!("+ - * / %", vec![
+            Token::Symbol("+"),
+            Token::Symbol("-"),
+            Token::Symbol("*"),
+            Token::Symbol("/"),
+            Token::Symbol("%"),
+        ]);
+    }
+
+    #[test]
+    #[should_panic(expected = "unrecognized symbol")]
+    fn test_illegal_character() {
+        lex_and_assert_eq!("(+2 3)", Vec::<_>::new());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid number")]
+    fn test_invalid_number() {
+        lex_and_assert_eq!("98.23.35", Vec::<_>::new());
     }
 }
